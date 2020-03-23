@@ -59,7 +59,7 @@ class SentimentAnalysis(gcpCred: ServiceAccountCredentials) extends RichFlatMapF
     // Detect entity sentiments in the given text
     val response = language.analyzeEntitySentiment(request)
     for (entity <- response.getEntitiesList) {
-      entityList += TweetSentiment(entity.getName,entity.getType.toString,entity.getSentiment.getScore)
+      entityList += TweetSentiment(entity.getName,entity.getType.toString,entity.getSentiment.getScore,text)
     }
     entityList.toList
   }

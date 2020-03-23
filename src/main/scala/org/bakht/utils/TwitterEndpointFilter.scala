@@ -10,7 +10,7 @@ import scala.collection.JavaConverters._
 
 //////////////////////////////////////////////////////
 // Create an Endpoint to Track our terms
-class TwitterEndpointFilter(hashtags:List[String]=List("nba","ufc","kobe","covid"))
+class TwitterEndpointFilter(hashtags:List[String]=List("covid"))
   extends TwitterSource.EndpointInitializer with Serializable {
   @Override
   def createEndpoint(): StreamingEndpoint = {

@@ -6,6 +6,6 @@ case class Tweet (
                  id: Long,
                  created_at: String,
                  lang: String,
-                 place: String,
+                 place: Option[String],
                  hashtags: Option[List[String]]
                  )

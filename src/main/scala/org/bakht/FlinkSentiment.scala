@@ -19,6 +19,10 @@ import scala.collection.JavaConverters._
 //    TOKEN
 //    TOKEN_SECRET
 
+// GCP service account json required
+
+// Optional twitter key word filters
+
 object FlinkSentiment extends App {
 
     val env = StreamExecutionEnvironment.getExecutionEnvironment
@@ -30,8 +34,15 @@ object FlinkSentiment extends App {
     twitterProps.setProperty(TwitterSource.TOKEN_SECRET,twitterProps.get("token-secret").toString)
 
 
-    val gcpCredJson: String = kdsProps("GCPProperties").getProperty("CREDS")
+    val gcpCredJson: String = kdsProps("GCPProperties").getProperty("Creds")
     val twitterSource: TwitterSource = new TwitterSource(twitterProps)
+
+    val twitterKeyWords: String = kdsProps("TwitterFilters").getProperty("keywords","")
+    if (twitterKeyWords.nonEmpty)
+        twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter(
+            twitterKeyWords.split(",").toList
+        ))
+    else
     twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter())
 
     val gcpCred = ServiceAccountCredentials.fromStream(new FileInputStream(gcpCredJson))
@@ -44,7 +55,6 @@ object FlinkSentiment extends App {
         .print("Sentiment")
 
 
-    tweets.print
     env.execute("flink-sentiment-app")
 
 

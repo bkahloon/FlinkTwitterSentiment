@@ -177,7 +177,6 @@ under the License.
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.apache.flink:force-shading</exclude>
-                                    <exlude>org.apache.flink:flink-shaded-netty</exlude>
                                     <exlude>org.apache.flink:flink-shaded-guava</exlude>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>org.slf4j:*</exclude>
