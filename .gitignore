@@ -1,0 +1,5 @@
+/src/main/resources/
+.idea/
+FlinkSentiment.iml
+dependency-reduced-pom.xml
+target/

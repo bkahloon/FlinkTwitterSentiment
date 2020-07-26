@@ -32,29 +32,15 @@ under the License.
         <flink.version>1.8.0</flink.version>
         <scala.binary.version>2.11</scala.binary.version>
         <scala.version>2.11.8</scala.version>
-        <kda.version>1.1.0</kda.version>
     </properties>
 
     <dependencies>
 
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-kinesisanalytics-runtime</artifactId>
-            <version>${kda.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.json4s/json4s-native -->
-        <dependency>
             <groupId>org.json4s</groupId>
             <artifactId>json4s-native_2.11</artifactId>
             <version>3.6.7</version>
         </dependency>
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.oauth-client/google-oauth-client &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.google.oauth-client</groupId>-->
-<!--            <artifactId>google-oauth-client</artifactId>-->
-<!--            <version>1.30.6</version>-->
-<!--        </dependency>-->
-<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.api-client/google-api-client &ndash;&gt;-->
         <dependency>
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
@@ -65,9 +51,22 @@ under the License.
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-language</artifactId>
-            <version>1.99.3</version>
+            <version>1.99.4</version>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-kafka_2.11</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>2.4.1</version>
+        </dependency>
 
 
 
@@ -75,16 +74,15 @@ under the License.
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-table</artifactId>
-            <version>1.8.0</version>
+            <version>${flink.version}</version>
             <type>pom</type>
-            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-twitter -->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-twitter_2.11</artifactId>
-            <version>1.8.0</version>
+            <version>${flink.version}</version>
         </dependency>
 
 
@@ -94,29 +92,19 @@ under the License.
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-scala_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-scala_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
 
-        <!-- Scala Library, provided by Flink as well. -->
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- runtime-web dependency is need to start web UI from IDE -->
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-runtime-web_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- queryable-state dependencies are needed for respective examples -->
@@ -131,17 +119,6 @@ under the License.
             <version>${flink.version}</version>
         </dependency>
 
-        <!--
-        Derby is used for a sink connector example.
-        Example only works in local mode, i.e, it is not possible to submit it to a running cluster.
-        The dependency is set to provided to reduce the size of the JAR file.
-        -->
-        <dependency>
-            <groupId>org.apache.derby</groupId>
-            <artifactId>derby</artifactId>
-            <version>10.13.1.1</version>
-            <scope>provided</scope>
-        </dependency>
 
         <!-- Logging -->
         <dependency>
@@ -176,8 +153,6 @@ under the License.
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>org.apache.flink:force-shading</exclude>
-                                    <exlude>org.apache.flink:flink-shaded-guava</exlude>
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>org.slf4j:*</exclude>
                                     <exclude>log4j:*</exclude>
