@@ -1,17 +1,20 @@
 package org.bakht
-import java.io.FileInputStream
 import java.util.Properties
 
-import com.amazonaws.services.kinesisanalytics.runtime.KinesisAnalyticsRuntime
+import org.apache.kafka.clients.consumer.ConsumerConfig
+import org.slf4j.LoggerFactory
 import org.apache.flink.streaming.api.scala._
 import org.apache.flink.streaming.connectors.twitter.TwitterSource
-import org.bakht.caseclass.Tweet
+import org.bakht.caseclass.{Tweet, TweetSentiment}
 import org.bakht.mappers.TweetMapper
 import org.bakht.utils.TwitterEndpointFilter
 import com.google.auth.oauth2.ServiceAccountCredentials
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer
 import org.bakht.mappers.SentimentAnalysis
+import org.bakht.serde.KafkaSerializer
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 // Twitter Props required
 //    CONSUMER_KEY
@@ -25,34 +28,45 @@ import scala.collection.JavaConverters._
 
 object FlinkSentiment extends App {
 
+    val logger = LoggerFactory.getLogger(this.getClass)
+
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-    val kdsProps: Map[String,Properties]  = KinesisAnalyticsRuntime.getApplicationProperties().asScala.toMap
-    val twitterProps: Properties = kdsProps("FlinkApplicationProperties")
-    twitterProps.setProperty(TwitterSource.CONSUMER_KEY,twitterProps.get("consumer").toString)
-    twitterProps.setProperty(TwitterSource.CONSUMER_SECRET,twitterProps.get("consumer-secret").toString)
-    twitterProps.setProperty(TwitterSource.TOKEN,twitterProps.get("token").toString)
-    twitterProps.setProperty(TwitterSource.TOKEN_SECRET,twitterProps.get("token-secret").toString)
+    val twitterProps: Properties = new Properties()
+    twitterProps.setProperty(TwitterSource.CONSUMER_KEY,scala.util.Properties.envOrElse("CONSUMER_KEY", "" ))
+    twitterProps.setProperty(TwitterSource.CONSUMER_SECRET,scala.util.Properties.envOrElse("CONSUMER_SECRET", "" ))
+    twitterProps.setProperty(TwitterSource.TOKEN,scala.util.Properties.envOrElse("TOKEN", "" ))
+    twitterProps.setProperty(TwitterSource.TOKEN_SECRET,scala.util.Properties.envOrElse("TOKEN_SECRET", ""))
 
-
-    val gcpCredJson: String = kdsProps("GCPProperties").getProperty("Creds")
+    val gcpCredJson: String = scala.util.Properties.envOrElse("GOOGLE_CRED", "")
     val twitterSource: TwitterSource = new TwitterSource(twitterProps)
+    var twitterKeyWords: List[String] = List()
+    if(!args.isEmpty){
+        twitterKeyWords = args.toList
+    }
+    if (twitterKeyWords.nonEmpty) {
+      twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter(twitterKeyWords))
+    } else twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter())
 
-    val twitterKeyWords: String = kdsProps("TwitterFilters").getProperty("keywords","")
-    if (twitterKeyWords.nonEmpty)
-        twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter(
-            twitterKeyWords.split(",").toList
-        ))
-    else
-    twitterSource.setCustomEndpointInitializer(new TwitterEndpointFilter())
-
-    val gcpCred = ServiceAccountCredentials.fromStream(new FileInputStream(gcpCredJson))
+    val gcpCred = ServiceAccountCredentials.fromStream(getClass.getResourceAsStream(gcpCredJson))
     val tweets: DataStream[Tweet] = env
       .addSource(twitterSource)
         .flatMap(new TweetMapper)
 
+    val producerProp: Properties = new Properties()
+    producerProp.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    val kafkaProducer = new FlinkKafkaProducer[TweetSentiment](
+        "my-topic",
+        new KafkaSerializer[TweetSentiment],
+        producerProp
+    )
+
+//    val tweetSentiment = tweets
+//      .flatMap(new SentimentAnalysis(gcpCred))
+
     tweets
-      .flatMap(new SentimentAnalysis(gcpCred))
-        .print("Sentiment")
+      .print()
+       /// .addSink(kafkaProducer)
+
 
 
     env.execute("flink-sentiment-app")

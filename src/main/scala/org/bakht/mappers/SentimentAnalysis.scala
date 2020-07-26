@@ -8,7 +8,6 @@ import org.apache.flink.api.common.functions.RichFlatMapFunction
 import org.apache.flink.configuration.Configuration
 import org.apache.flink.util.Collector
 import org.bakht.caseclass.{Tweet, TweetSentiment}
-
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ListBuffer
 // Imports the Google Cloud client library
